@@ -109,6 +109,13 @@ pub fn downgrade_tier(tier: InferenceTier) -> InferenceTier {
 // --- internal helpers ---
 
 fn costs_by_scope(conn: &Connection, col: &str, val: &str) -> Result<CostSummary, String> {
+    // Whitelist column names to prevent SQL injection via dynamic column.
+    let col = match col {
+        "agent_id" => "agent_id",
+        "org_id" => "org_id",
+        _ => return Err(format!("invalid scope column: {col}")),
+    };
+
     let sql = format!(
         "SELECT COALESCE(SUM(tokens_input + tokens_output), 0),
                 COALESCE(SUM(cost_usd), 0.0),

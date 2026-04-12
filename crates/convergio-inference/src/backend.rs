@@ -66,6 +66,11 @@ pub async fn call_model(
 
     let url = format!("{}/v1/chat/completions", endpoint.url.trim_end_matches('/'));
 
+    // SSRF protection: only allow http/https schemes
+    if !url.starts_with("http://") && !url.starts_with("https://") {
+        return Err(format!("invalid endpoint URL scheme: {url}"));
+    }
+
     let body = ChatRequest {
         model: model_name,
         messages: vec![ChatMessage {
@@ -97,7 +102,9 @@ pub async fn call_model(
     if !resp.status().is_success() {
         let status = resp.status();
         let body = resp.text().await.unwrap_or_default();
-        return Err(format!("model returned {status}: {body}"));
+        // Truncate error body to avoid leaking internal API details
+        let safe_body: String = body.chars().take(200).collect();
+        return Err(format!("model returned {status}: {safe_body}"));
     }
 
     let chat: ChatResponse = resp

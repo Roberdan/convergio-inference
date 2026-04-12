@@ -33,6 +33,20 @@ pub async fn call_mlx(
 ) -> Result<InferenceResponse, String> {
     let python = resolve_python();
     tracing::info!(python = %python, model = %model_name, max_tokens, "MLX inference starting");
+    // Validate model_name to prevent Python code injection.
+    // Allow alphanumeric, hyphens, slashes, dots, underscores (HuggingFace IDs + local paths).
+    if !model_name
+        .chars()
+        .all(|c| c.is_alphanumeric() || "-/._ ".contains(c))
+    {
+        return Err(format!(
+            "invalid model name (illegal characters): {model_name}"
+        ));
+    }
+    if model_name.len() > 256 {
+        return Err("model name too long (max 256 chars)".to_string());
+    }
+
     // TurboQuant (kv_bits) disabled by default — produces garbage on 4-bit models.
     // Only enable for FP16/BF16 models where KV cache quantization is safe.
     let _turboquant = std::env::var("CONVERGIO_MLX_TURBOQUANT")
@@ -41,14 +55,20 @@ pub async fn call_mlx(
 
     let start = Instant::now();
 
+    // Safety: model_name is validated above; prompt is JSON-serialized (safe).
+    // Both are passed as JSON strings to avoid code injection in the Python script.
+    let model_name_json = serde_json::to_string(model_name).unwrap_or_default();
+    let prompt_json = serde_json::to_string(prompt).unwrap_or_default();
+
     // Uses chat template to prevent special token leaks (<|im_start|> etc)
     let script = format!(
         r#"
 import json
 from mlx_lm import load, generate
 
-model, tokenizer = load("{model_name}")
-raw = {prompt_json}
+model_name = json.loads({model_name_json})
+model, tokenizer = load(model_name)
+raw = json.loads({prompt_json})
 messages = [{{"role": "user", "content": raw}}]
 prompt = tokenizer.apply_chat_template(
     messages, add_generation_prompt=True, tokenize=False
@@ -60,8 +80,8 @@ response = response.strip()
 result = {{"content": response, "tokens": len(tokenizer.encode(response))}}
 print(json.dumps(result))
 "#,
-        model_name = model_name,
-        prompt_json = serde_json::to_string(prompt).unwrap_or_default(),
+        model_name_json = model_name_json,
+        prompt_json = prompt_json,
         max_tokens = max_tokens,
     );
 

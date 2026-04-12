@@ -232,3 +232,62 @@ fn empty_prompt_routes_to_cheapest() {
     let (_, d) = setup_router().route(&req("", None), false).unwrap();
     assert_eq!(d.selected_model, "llama-local");
 }
+
+// ── MLX model name validation ────────────────────────────────────────────────
+
+#[test]
+fn mlx_rejects_model_name_with_quotes() {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    let result = rt.block_on(convergio_inference::backend_mlx::call_mlx(
+        r#"evil"; import os; os.system("whoami") #"#,
+        "test",
+        10,
+    ));
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().contains("illegal characters"),
+        "should reject injection chars"
+    );
+}
+
+#[test]
+fn mlx_rejects_model_name_too_long() {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    let long_name = "a".repeat(300);
+    let result = rt.block_on(convergio_inference::backend_mlx::call_mlx(
+        &long_name, "test", 10,
+    ));
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().contains("too long"),
+        "should reject long model names"
+    );
+}
+
+#[test]
+fn mlx_accepts_valid_huggingface_id() {
+    // This will fail because MLX isn't installed, but it should NOT fail
+    // on validation — it should get past the name check.
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    let result = rt.block_on(convergio_inference::backend_mlx::call_mlx(
+        "mlx-community/Qwen2.5-Coder-7B-Instruct-4bit",
+        "hello",
+        10,
+    ));
+    // Should fail on subprocess, NOT on validation
+    if let Err(e) = &result {
+        assert!(
+            !e.contains("illegal characters") && !e.contains("too long"),
+            "valid name should pass validation: {e}"
+        );
+    }
+}

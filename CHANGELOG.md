@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/Roberdan/convergio-inference/compare/convergio-inference-v0.1.1...convergio-inference-v0.1.2) (2026-04-12)
+
+
+### Documentation
+
+* add .env.example with required environment variables ([#4](https://github.com/Roberdan/convergio-inference/issues/4)) ([851f5d9](https://github.com/Roberdan/convergio-inference/commit/851f5d99ece7c811f61163803c369e2a182f5d7f))
+
 ## [0.1.1](https://github.com/Roberdan/convergio-inference/compare/convergio-inference-v0.1.0...convergio-inference-v0.1.1) (2026-04-12)
 
 

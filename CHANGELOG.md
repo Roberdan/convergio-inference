@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/Roberdan/convergio-inference/compare/convergio-inference-v0.1.2...convergio-inference-v0.1.3) (2026-04-12)
+
+
+### Bug Fixes
+
+* align SDK dependency to v0.1.9 for type compatibility ([15ae815](https://github.com/Roberdan/convergio-inference/commit/15ae8150e82dc261e9fe370c93f837af78f338db))
+
 ## [0.1.2](https://github.com/Roberdan/convergio-inference/compare/convergio-inference-v0.1.1...convergio-inference-v0.1.2) (2026-04-12)
 
 

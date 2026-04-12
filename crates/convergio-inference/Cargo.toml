@@ -1,0 +1,27 @@
+[package]
+name = "convergio-inference"
+description = "LLM inference router — model selection, streaming, cost tracking"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+convergio-types = { workspace = true }
+convergio-db = { workspace = true }
+convergio-ipc = { workspace = true }
+convergio-telemetry = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+rusqlite = { workspace = true }
+axum = { workspace = true }
+reqwest = { workspace = true }
+toml = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tower = { version = "0.5", features = ["util"] }
+serde_json = { workspace = true }
+chrono = { workspace = true }

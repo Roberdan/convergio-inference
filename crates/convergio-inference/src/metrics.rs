@@ -57,6 +57,9 @@ pub struct MetricsCollector {
     entries: Vec<MetricsEntry>,
 }
 
+/// Hard cap on in-memory entries to prevent unbounded growth.
+const MAX_METRICS_ENTRIES: usize = 100_000;
+
 impl MetricsCollector {
     pub fn new() -> Self {
         Self {
@@ -64,11 +67,16 @@ impl MetricsCollector {
         }
     }
 
-    /// Append one observation and evict entries beyond 7-day retention.
+    /// Append one observation and evict entries beyond 7-day retention or cap.
     pub fn record(&mut self, entry: MetricsEntry) {
         self.entries.push(entry);
         let cutoff = Utc::now() - TimeWindow::SevenDays.duration();
         self.entries.retain(|e| e.timestamp >= cutoff);
+        // Hard cap: if still over limit, drop oldest entries
+        if self.entries.len() > MAX_METRICS_ENTRIES {
+            let excess = self.entries.len() - MAX_METRICS_ENTRIES;
+            self.entries.drain(..excess);
+        }
     }
 
     /// Compute stats for `model` within `window`.

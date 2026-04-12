@@ -54,12 +54,22 @@ pub struct RoutingResponse {
     pub model_metrics: Vec<crate::metrics::ModelMetrics>,
 }
 
+/// Maximum prompt length in bytes (128 KiB — generous for LLM use).
+const MAX_PROMPT_BYTES: usize = 128 * 1024;
+/// Maximum tokens a caller can request per inference call.
+const MAX_TOKENS_LIMIT: u32 = 32_768;
+/// Maximum request body size (256 KiB).
+const MAX_BODY_BYTES: usize = 256 * 1024;
+/// Maximum length for agent_id / org_id strings.
+const MAX_ID_LEN: usize = 256;
+
 /// Build the inference API router.
 pub fn inference_routes(state: Arc<InferenceState>) -> Router {
     Router::new()
         .route("/api/inference/costs", get(handle_costs))
         .route("/api/inference/routing-decision", get(handle_routing))
         .route("/api/inference/complete", post(handle_complete))
+        .layer(axum::extract::DefaultBodyLimit::max(MAX_BODY_BYTES))
         .with_state(state)
 }
 
@@ -146,8 +156,23 @@ async fn handle_routing(
 /// POST /api/inference/complete — real model inference call.
 async fn handle_complete(
     State(state): State<Arc<InferenceState>>,
-    Json(request): Json<InferenceRequest>,
+    Json(mut request): Json<InferenceRequest>,
 ) -> Json<serde_json::Value> {
+    // Input validation — prevent DoS and invalid data
+    if request.prompt.len() > MAX_PROMPT_BYTES {
+        return Json(serde_json::json!({
+            "error": { "code": "PROMPT_TOO_LARGE",
+                       "message": format!("prompt exceeds {} byte limit", MAX_PROMPT_BYTES) }
+        }));
+    }
+    if request.agent_id.len() > MAX_ID_LEN {
+        return Json(serde_json::json!({
+            "error": { "code": "INVALID_INPUT", "message": "agent_id too long" }
+        }));
+    }
+    // Clamp max_tokens to prevent abuse
+    request.max_tokens = request.max_tokens.min(MAX_TOKENS_LIMIT);
+
     let should_downgrade = {
         let conn = state.pool.get().ok();
         conn.map(|c| {

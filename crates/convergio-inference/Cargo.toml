@@ -4,6 +4,7 @@ description = "LLM inference router — model selection, streaming, cost trackin
 version = "0.1.4"
 edition.workspace = true
 license.workspace = true
+repository = "https://github.com/Roberdan/convergio-inference"
 readme = "../../README.md"
 
 [dependencies]

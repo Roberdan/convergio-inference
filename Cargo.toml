@@ -3,17 +3,16 @@ resolver = "2"
 members = ["crates/convergio-inference"]
 
 [workspace.package]
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/Roberdan/convergio-inference"
 
 [workspace.dependencies]
 # SDK dependencies
-convergio-sdk = { git = "https://github.com/Roberdan/convergio-sdk", tag = "v0.1.9" }
-convergio-types = { git = "https://github.com/Roberdan/convergio-sdk", tag = "v0.1.9", version = "0.1.6" }
-convergio-db = { git = "https://github.com/Roberdan/convergio-sdk", tag = "v0.1.9", version = "0.1.6" }
-convergio-telemetry = { git = "https://github.com/Roberdan/convergio-sdk", tag = "v0.1.9", version = "0.1.6" }
+convergio-types = "0.1"
+convergio-db = "0.1"
+convergio-telemetry = "0.1"
 convergio-ipc = "0.1"
 
 # Common deps — pin same versions as SDK for compatibility

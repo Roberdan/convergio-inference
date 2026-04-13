@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/Roberdan/convergio-inference/compare/v0.1.4...v0.1.5) (2026-04-13)
+
+
+### Bug Fixes
+
+* add crates.io publishing metadata (description, repository) ([91136e9](https://github.com/Roberdan/convergio-inference/commit/91136e96449b193a4daeeb4a9afbb420d1608da4))
+
 ## [0.1.4](https://github.com/Roberdan/convergio-inference/compare/v0.1.3...v0.1.4) (2026-04-13)
 
 

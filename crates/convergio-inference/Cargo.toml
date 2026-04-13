@@ -1,7 +1,7 @@
 [package]
 name = "convergio-inference"
 description = "LLM inference router — model selection, streaming, cost tracking"
-version = "0.1.3"
+version = "0.1.4"
 edition.workspace = true
 license.workspace = true
 readme = "../../README.md"

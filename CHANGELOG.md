@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/Roberdan/convergio-inference/compare/v0.1.5...v0.1.6) (2026-04-13)
+
+
+### Bug Fixes
+
+* pass CARGO_REGISTRY_TOKEN to release workflow ([70fc970](https://github.com/Roberdan/convergio-inference/commit/70fc970a73fc3e997ed0a20caa632e2836b1ba0e))
+
 ## [0.1.5](https://github.com/Roberdan/convergio-inference/compare/v0.1.4...v0.1.5) (2026-04-13)
 
 

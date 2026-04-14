@@ -23,6 +23,23 @@ fn req(tier: Option<InferenceTier>) -> InferenceRequest {
         prompt: "test prompt".into(),
         max_tokens: 256,
         tier_hint: tier,
+        model_override: None,
+        agent_id: "elena".into(),
+        org_id: Some("legal-corp".into()),
+        plan_id: Some(42),
+        constraints: InferenceConstraints {
+            max_latency_ms: None,
+            max_cost: None,
+        },
+    }
+}
+
+fn req_with_override(model: &str) -> InferenceRequest {
+    InferenceRequest {
+        prompt: "test prompt".into(),
+        max_tokens: 256,
+        tier_hint: None,
+        model_override: Some(model.to_string()),
         agent_id: "elena".into(),
         org_id: Some("legal-corp".into()),
         plan_id: Some(42),
@@ -145,4 +162,77 @@ fn health_update_toggles_availability() {
         .route(&req(Some(InferenceTier::T2Standard)), false)
         .unwrap();
     assert_eq!(resp.model_used, "model-a");
+}
+
+#[test]
+fn model_override_bypasses_tier_routing() {
+    let mut router = ModelRouter::new();
+    router.register_model(ep(
+        "cheap",
+        ModelProvider::Local,
+        InferenceTier::T1Trivial,
+        InferenceTier::T4Critical,
+        0.0,
+    ));
+    router.register_model(ep(
+        "opus",
+        ModelProvider::Cloud,
+        InferenceTier::T3Complex,
+        InferenceTier::T4Critical,
+        15.0,
+    ));
+
+    // Override to opus — even though "cheap" is available and cheaper
+    let (resp, decision) = router
+        .route(&req_with_override("opus"), false)
+        .unwrap();
+    assert_eq!(resp.model_used, "opus");
+    assert_eq!(decision.effective_tier, "override");
+    assert!(decision.reason.contains("explicit override"));
+}
+
+#[test]
+fn model_override_falls_back_when_unhealthy() {
+    let mut router = ModelRouter::new();
+    let mut broken = ep(
+        "opus",
+        ModelProvider::Cloud,
+        InferenceTier::T3Complex,
+        InferenceTier::T4Critical,
+        15.0,
+    );
+    broken.healthy = false;
+    router.register_model(broken);
+    router.register_model(ep(
+        "cheap",
+        ModelProvider::Local,
+        InferenceTier::T1Trivial,
+        InferenceTier::T4Critical,
+        0.0,
+    ));
+
+    // Override to opus but it's unhealthy — should fall back to tier routing
+    let (resp, decision) = router
+        .route(&req_with_override("opus"), false)
+        .unwrap();
+    assert_eq!(resp.model_used, "cheap");
+    assert_ne!(decision.effective_tier, "override");
+}
+
+#[test]
+fn model_override_falls_back_when_unknown() {
+    let mut router = ModelRouter::new();
+    router.register_model(ep(
+        "cheap",
+        ModelProvider::Local,
+        InferenceTier::T1Trivial,
+        InferenceTier::T4Critical,
+        0.0,
+    ));
+
+    // Override to nonexistent model — should fall back to tier routing
+    let (resp, _) = router
+        .route(&req_with_override("nonexistent-model"), false)
+        .unwrap();
+    assert_eq!(resp.model_used, "cheap");
 }

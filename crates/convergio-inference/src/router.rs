@@ -103,6 +103,30 @@ impl ModelRouter {
         request: &InferenceRequest,
         budget_downgrade: bool,
     ) -> Result<RoutingDecision, String> {
+        // Explicit model override — bypass tier routing entirely
+        if let Some(ref model_name) = request.model_override {
+            if let Some(ep) = self.models.get(model_name) {
+                if ep.healthy {
+                    return Ok(RoutingDecision {
+                        selected_model: ep.name.clone(),
+                        reason: format!("explicit override → {}", model_name),
+                        effective_tier: "override".to_string(),
+                        fallback_chain: vec![],
+                        budget_remaining: None,
+                    });
+                }
+                tracing::warn!(
+                    model = model_name.as_str(),
+                    "model override unhealthy, falling back to tier routing"
+                );
+            } else {
+                tracing::warn!(
+                    model = model_name.as_str(),
+                    "model override not found, falling back to tier routing"
+                );
+            }
+        }
+
         let classified_tier = classifier::classify(request);
         let effective_tier = if budget_downgrade {
             budget::downgrade_tier(classified_tier.clone())

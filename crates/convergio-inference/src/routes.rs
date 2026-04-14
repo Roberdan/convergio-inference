@@ -43,6 +43,8 @@ pub struct CostsResponse {
 pub struct RoutingQuery {
     pub prompt: Option<String>,
     pub tier: Option<String>,
+    /// Explicit model override — bypasses tier routing if model is healthy.
+    pub model: Option<String>,
     pub agent_id: Option<String>,
     pub max_cost: Option<f64>,
 }
@@ -113,6 +115,7 @@ async fn handle_routing(
         prompt: params.prompt.unwrap_or_default(),
         max_tokens: 256,
         tier_hint,
+        model_override: params.model,
         agent_id: params
             .agent_id
             .clone()

@@ -87,6 +87,33 @@ fn hardcoded_defaults() -> Vec<ModelEntry> {
             tier_min: "t2".into(),
             tier_max: "t4".into(),
         },
+        ModelEntry {
+            name: "qwen-plus".into(),
+            provider: "cloud".into(),
+            url: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions".into(),
+            cost_per_1k_input: 0.8,
+            cost_per_1k_output: 2.0,
+            tier_min: "t1".into(),
+            tier_max: "t3".into(),
+        },
+        ModelEntry {
+            name: "qwen-max".into(),
+            provider: "cloud".into(),
+            url: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions".into(),
+            cost_per_1k_input: 2.4,
+            cost_per_1k_output: 9.6,
+            tier_min: "t2".into(),
+            tier_max: "t4".into(),
+        },
+        ModelEntry {
+            name: "copilot-gpt-4o".into(),
+            provider: "cloud".into(),
+            url: "https://api.githubcopilot.com/chat/completions".into(),
+            cost_per_1k_input: 0.0,
+            cost_per_1k_output: 0.0,
+            tier_min: "t2".into(),
+            tier_max: "t4".into(),
+        },
     ]
 }
 
@@ -146,6 +173,10 @@ fn is_cloud_model_available(url: &str) -> bool {
         std::env::var("CONVERGIO_ANTHROPIC_TOKEN").is_ok()
     } else if url.contains("openai.com") {
         std::env::var("CONVERGIO_OPENAI_TOKEN").is_ok()
+    } else if url.contains("dashscope.aliyuncs.com") {
+        std::env::var("CONVERGIO_QWEN_TOKEN").is_ok()
+    } else if url.contains("githubcopilot.com") {
+        std::env::var("CONVERGIO_GITHUB_TOKEN").is_ok()
     } else {
         true
     }
@@ -183,7 +214,7 @@ mod tests {
     #[test]
     fn test_load_defaults() {
         let endpoints = load_model_endpoints(None);
-        assert_eq!(endpoints.len(), 5);
+        assert_eq!(endpoints.len(), 8);
         let names: Vec<&str> = endpoints.iter().map(|e| e.name.as_str()).collect();
         assert!(names.contains(&"llama3"));
         assert!(names.contains(&"claude-sonnet"));

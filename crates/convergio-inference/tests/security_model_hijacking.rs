@@ -35,6 +35,7 @@ fn req(prompt: &str, hint: Option<InferenceTier>) -> InferenceRequest {
         prompt: prompt.into(),
         max_tokens: 256,
         tier_hint: hint,
+        model_override: None,
         agent_id: "test".into(),
         org_id: Some("test-org".into()),
         plan_id: Some(1),

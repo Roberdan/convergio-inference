@@ -87,10 +87,20 @@ pub async fn call_model(
 
     // Cloud providers need auth headers (loaded from daemon env file)
     if endpoint.provider == ModelProvider::Cloud {
-        if let Ok(key) = std::env::var("CONVERGIO_ANTHROPIC_TOKEN") {
-            req = req
-                .header("x-api-key", &key)
-                .header("anthropic-version", "2023-06-01");
+        if endpoint.url.contains("anthropic.com") {
+            if let Ok(key) = std::env::var("CONVERGIO_ANTHROPIC_TOKEN") {
+                req = req
+                    .header("x-api-key", &key)
+                    .header("anthropic-version", "2023-06-01");
+            }
+        } else if endpoint.url.contains("dashscope.aliyuncs.com") {
+            if let Ok(key) = std::env::var("CONVERGIO_QWEN_TOKEN") {
+                req = req.header("Authorization", format!("Bearer {key}"));
+            }
+        } else if endpoint.url.contains("githubcopilot.com") {
+            if let Ok(key) = std::env::var("CONVERGIO_GITHUB_TOKEN") {
+                req = req.header("Authorization", format!("Bearer {key}"));
+            }
         } else if let Ok(key) = std::env::var("CONVERGIO_OPENAI_TOKEN") {
             req = req.header("Authorization", format!("Bearer {key}"));
         }

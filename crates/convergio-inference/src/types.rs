@@ -48,6 +48,11 @@ pub struct InferenceRequest {
     pub max_tokens: u32,
     /// Caller hint — router may override based on health/budget.
     pub tier_hint: Option<InferenceTier>,
+    /// Explicit model override — bypasses tier routing entirely.
+    /// If the model is healthy, it will be used directly.
+    /// If unhealthy or unknown, falls back to normal tier routing.
+    #[serde(default)]
+    pub model_override: Option<String>,
     pub agent_id: String,
     pub org_id: Option<String>,
     pub plan_id: Option<i64>,

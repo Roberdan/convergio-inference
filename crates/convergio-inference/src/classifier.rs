@@ -87,6 +87,7 @@ mod tests {
             prompt: prompt.to_string(),
             max_tokens: 256,
             tier_hint: hint,
+            model_override: None,
             agent_id: "test-agent".into(),
             org_id: None,
             plan_id: None,

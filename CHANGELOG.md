@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/Roberdan/convergio-inference/compare/v0.1.6...v0.1.7) (2026-04-14)
+
+
+### Features
+
+* model override + Qwen/Copilot endpoints ([7dd4578](https://github.com/Roberdan/convergio-inference/commit/7dd457868c9ca605b71b6ef59cf1d5b28c75e99a))
+
 ## [0.1.6](https://github.com/Roberdan/convergio-inference/compare/v0.1.5...v0.1.6) (2026-04-13)
 
 

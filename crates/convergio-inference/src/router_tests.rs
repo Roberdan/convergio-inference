@@ -183,9 +183,7 @@ fn model_override_bypasses_tier_routing() {
     ));
 
     // Override to opus — even though "cheap" is available and cheaper
-    let (resp, decision) = router
-        .route(&req_with_override("opus"), false)
-        .unwrap();
+    let (resp, decision) = router.route(&req_with_override("opus"), false).unwrap();
     assert_eq!(resp.model_used, "opus");
     assert_eq!(decision.effective_tier, "override");
     assert!(decision.reason.contains("explicit override"));
@@ -212,9 +210,7 @@ fn model_override_falls_back_when_unhealthy() {
     ));
 
     // Override to opus but it's unhealthy — should fall back to tier routing
-    let (resp, decision) = router
-        .route(&req_with_override("opus"), false)
-        .unwrap();
+    let (resp, decision) = router.route(&req_with_override("opus"), false).unwrap();
     assert_eq!(resp.model_used, "cheap");
     assert_ne!(decision.effective_tier, "override");
 }

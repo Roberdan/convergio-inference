@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.8](https://github.com/Roberdan/convergio-inference/compare/v0.1.7...v0.1.8) (2026-04-18)
+
+
+### Bug Fixes
+
+* **deps:** bump rustls-webpki for RUSTSEC-2026-0099 ([885c2ad](https://github.com/Roberdan/convergio-inference/commit/885c2ad79c985b53b639caf68d317e83a7fde16f))
+* security and quality audit pass 2 ([e4bdf0f](https://github.com/Roberdan/convergio-inference/commit/e4bdf0ff76c548fdf910dbb49bbde397f11409ad))
+* security audit pass  input validation, info leak, infinite loop guard2 ([7b4888a](https://github.com/Roberdan/convergio-inference/commit/7b4888a78c882bfaed5e3e127409f4f5af51726e))
+
 ## [0.1.7](https://github.com/Roberdan/convergio-inference/compare/v0.1.6...v0.1.7) (2026-04-14)
 
 

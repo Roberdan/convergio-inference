@@ -144,8 +144,6 @@ pub async fn call_model(
 
 #[cfg(test)]
 mod tests {
-    #[allow(unused_imports)]
-    use super::*;
 
     #[test]
     fn model_name_strips_prefix() {

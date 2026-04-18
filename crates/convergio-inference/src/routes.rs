@@ -79,6 +79,22 @@ async fn handle_costs(
     State(state): State<Arc<InferenceState>>,
     Query(params): Query<CostsQuery>,
 ) -> Json<CostsResponse> {
+    // Validate ID lengths to prevent oversized query params
+    if params
+        .agent_id
+        .as_ref()
+        .is_some_and(|id| id.len() > MAX_ID_LEN)
+    {
+        return Json(CostsResponse { summaries: vec![] });
+    }
+    if params
+        .org_id
+        .as_ref()
+        .is_some_and(|id| id.len() > MAX_ID_LEN)
+    {
+        return Json(CostsResponse { summaries: vec![] });
+    }
+
     let conn = match state.pool.get() {
         Ok(c) => c,
         Err(_) => return Json(CostsResponse { summaries: vec![] }),
@@ -109,6 +125,27 @@ async fn handle_routing(
     State(state): State<Arc<InferenceState>>,
     Query(params): Query<RoutingQuery>,
 ) -> Json<serde_json::Value> {
+    // Validate query param lengths to prevent abuse
+    if params
+        .prompt
+        .as_ref()
+        .is_some_and(|p| p.len() > MAX_PROMPT_BYTES)
+    {
+        return Json(serde_json::json!({
+            "error": { "code": "PROMPT_TOO_LARGE",
+                       "message": format!("prompt exceeds {} byte limit", MAX_PROMPT_BYTES) }
+        }));
+    }
+    if params
+        .agent_id
+        .as_ref()
+        .is_some_and(|id| id.len() > MAX_ID_LEN)
+    {
+        return Json(serde_json::json!({
+            "error": { "code": "INVALID_INPUT", "message": "agent_id too long" }
+        }));
+    }
+
     let tier_hint = params.tier.as_deref().and_then(InferenceTier::from_label);
 
     let request = InferenceRequest {
@@ -171,6 +208,15 @@ async fn handle_complete(
     if request.agent_id.len() > MAX_ID_LEN {
         return Json(serde_json::json!({
             "error": { "code": "INVALID_INPUT", "message": "agent_id too long" }
+        }));
+    }
+    if request
+        .org_id
+        .as_ref()
+        .is_some_and(|id| id.len() > MAX_ID_LEN)
+    {
+        return Json(serde_json::json!({
+            "error": { "code": "INVALID_INPUT", "message": "org_id too long" }
         }));
     }
     // Clamp max_tokens to prevent abuse

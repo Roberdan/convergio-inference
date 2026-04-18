@@ -98,7 +98,9 @@ print(json.dumps(result))
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("mlx-lm failed: {stderr}"));
+        // Truncate stderr to avoid leaking internal paths and Python tracebacks
+        let safe_stderr: String = stderr.chars().take(200).collect();
+        return Err(format!("mlx-lm failed: {safe_stderr}"));
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);

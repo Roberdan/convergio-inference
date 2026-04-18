@@ -147,9 +147,17 @@ fn parse_tier(s: &str) -> InferenceTier {
 }
 
 /// Resolve env var placeholders: `${VAR:-default}` and `${VAR}`.
+/// Capped at 10 substitutions to prevent infinite loops from self-referencing vars.
 fn resolve_env(s: &str) -> String {
     let mut result = s.to_string();
+    let mut iterations = 0;
+    const MAX_RESOLVE_ITERATIONS: usize = 10;
     while let Some(start) = result.find("${") {
+        iterations += 1;
+        if iterations > MAX_RESOLVE_ITERATIONS {
+            tracing::warn!("resolve_env: exceeded max iterations, possible self-reference");
+            break;
+        }
         let end = match result[start..].find('}') {
             Some(e) => start + e,
             None => break,
